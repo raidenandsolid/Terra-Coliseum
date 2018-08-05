@@ -10,7 +10,7 @@ var boss = []
    6. Magic attack
  */
 
- let easyEnemies = [
+ let tutorialEnemies = [
    {name: 'Sewer Rat',
     hp: 10,
     atk: 3,
@@ -25,7 +25,21 @@ var boss = []
     matk: 0}
  ]
 
+ let easyEnemies = [
+   {name: 'Kobold',
+    hp: 18,
+    atk: 11,
+    def: 8,
+    agi: 6,
+    matk: 0},
+   {name: 'Golbin',
+    hp: 16,
+    atk: 8,
+    def: 6,
+    agi: 10,
+    matk: 0}
+ ]
 export function loadEnemy() {
-    enemies.push(easyEnemies);
+    enemies.push(tutorialEnemies);
     return enemies;
 }
