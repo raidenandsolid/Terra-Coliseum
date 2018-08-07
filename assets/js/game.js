@@ -135,5 +135,43 @@ var player = {class: playerClass[0], weapon: commonWeapons[1]}
 enemies = {monster: tutorialEnemies[0]}
 
 function main(){
-  
+  loadGame();
+  $("#select1").click(function() {
+    selectCharacter($("#select1 span").html());
+  });
+  $("#select2").click(function() {
+    selectCharacter($("#select2 span").html());
+  });
+
 }
+
+function loadGame(){
+  setTimeout(function(){
+      $('body').addClass('loaded');
+      $('h1').css('color','#222222');
+  }, 3000);
+  $('#battle').hide();
+  $('#select1 span').html(playerClass[0].name);
+  $('#select2 span').html(playerClass[1].name);
+
+}
+
+function selectCharacter(selection){
+  this.select = selection;
+  switch (this.select) {
+    case 'Squire':
+      this.weapon = commonWeapons[0];
+      break;
+    case 'Fighter':
+      this.weapon = commonWeapons[1];
+      break;
+    default:
+      this.weapon = commonWeapons[0];
+      break;
+    }
+    player = {class: this.select, weapon: this.weapon}
+    $("#characterSelect").hide();
+    $("#battle").show();
+}
+
+$(document).ready(main);
