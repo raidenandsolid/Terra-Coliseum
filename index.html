@@ -25,10 +25,40 @@
       </div>
       <div id="battle" class="row">
         <div class="col" id="player">
-          Test
+          <h2></h2>
+          <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+          </div>
+        </div>
+        <div class="col-xs-3" id="playerStats">
+          <table id="stats">
+            <tr>
+              <td class="attributes"><p id="pHp">HP:<span></span></p></td>
+              <td class="attributes"><p id="pAtk">ATK:<span></span></p></td>
+            </tr>
+            <tr>
+              <td class="attributes"><p id="pDef">DEF:<span></span></p></td>
+              <td class="attributes"><p id="pAgi">AGI:<span></span></p></td>
+            </tr>
+          </table>
         </div>
         <div class="col" id="enemy">
-          Test
+          <h2></h2>
+          <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+          </div>
+        </div>
+        <div class="col-xs-3" id="enemyStats">
+          <table id="stats">
+            <tr>
+              <td class="attributes"><p id="eHp">HP:<span></span></p></td>
+              <td class="attributes"><p id="eAtk">ATK:<span></span></p></td>
+            </tr>
+            <tr>
+              <td class="attributes"><p id="eDef">DEF:<span></span></p></td>
+              <td class="attributes"><p id="eAgi">AGI:<span></span></p></td>
+            </tr>
+          </table>
         </div>
       </div>
       <div id="loader-wrapper">

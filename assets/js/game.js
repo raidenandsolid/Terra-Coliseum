@@ -50,12 +50,14 @@ let commonWeapons = [
    rarity: 'common',
    atk: 10,
    agi: 3,
-   crit: 1},
-  {name: 'Gladius',
-   rarity: 'common',
-   atk: 8,
-   agi: 7,
-   crit: 1}]
+   crit: 1
+ },
+ {name: 'Gladius',
+  rarity: 'common',
+  atk: 8,
+  agi: 7,
+  crit: 1
+}]
 
 let uncommonWeapons = [
      {name: 'Refined Longsword',
@@ -67,7 +69,8 @@ let uncommonWeapons = [
       rarity: 'uncommon',
       atk: 14,
       agi: 11,
-      crit: 3}]
+      crit: 3
+  }]
 
 /*Armor will be defined by the following criteria:
   1. Armor name
@@ -87,7 +90,8 @@ let commonArmor = [
    rarity: 'common',
    def: 3,
    mdef: 3,
-   mres: 1}]
+   mres: 1
+ }]
 
 /* Enemies will be defined by the follow criteria
    1. Name
@@ -123,7 +127,7 @@ let commonArmor = [
     def: 8,
     agi: 6,
     matk: 0},
-   {name: 'Golbin',
+   {name: 'Goblin',
     hp: 16,
     atk: 8,
     def: 6,
@@ -131,7 +135,7 @@ let commonArmor = [
     matk: 0}
  ]
 
-var player = {class: playerClass[0], weapon: commonWeapons[1]}
+var player = {}
 enemies = {monster: tutorialEnemies[0]}
 
 function main(){
@@ -158,20 +162,32 @@ function loadGame(){
 
 function selectCharacter(selection){
   this.select = selection;
+  var pClass = [];
   switch (this.select) {
-    case 'Squire':
-      this.weapon = commonWeapons[0];
-      break;
     case 'Fighter':
+      this.weapon = commonWeapons[0];
+      pClass = playerClass[0];
+      break;
+    case 'Squire':
       this.weapon = commonWeapons[1];
+      pClass = playerClass[1];
       break;
     default:
       this.weapon = commonWeapons[0];
       break;
     }
-    player = {class: this.select, weapon: this.weapon}
+    let player = {class: pClass, weapon: this.weapon}
     $("#characterSelect").hide();
     $("#battle").show();
+    $("#player h2").html(player.class.name);
+    loadStats(player);
+}
+
+function loadStats(player){
+    $("#pHp span").html(player.class.hp);
+    $("#pAtk span").html(player.class.atk);
+    $("#pDef span").html(player.class.def);
+    $("#pAgi span").html(player.class.agi);
 }
 
 $(document).ready(main);
