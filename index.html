@@ -25,49 +25,52 @@
       </div>
       <div id="battle" class="row">
         <div class="col" id="player">
-          <h2></h2>
+          <img id="player-img" class="float-left img-fluid" src=""></img>
+          <h2 class="text-left"></h2>
           <div class="progress">
             <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
           </div>
-        </div>
-        <div class="col-xs-3" id="playerStats">
-          <table id="stats">
-            <tr>
-              <td class="attributes"><p id="pHp">HP:<span></span></p></td>
-              <td class="attributes"><p id="pAtk">ATK:<span></span></p></td>
-            </tr>
-            <tr>
-              <td class="attributes"><p id="pDef">DEF:<span></span></p></td>
-              <td class="attributes"><p id="pAgi">AGI:<span></span></p></td>
-            </tr>
-          </table>
+          <!--Player stats will be displayed on the bottom of the screen !-->
+          <div class="col-xs-3" id="playerStats">
+            <table id="stats">
+              <tr>
+                <td class="attributes"><p id="pHp">HP:<span></span></p></td>
+                <td class="attributes"><p id="pAtk">ATK:<span></span></p></td>
+              </tr>
+              <tr>
+                <td class="attributes"><p id="pDef">DEF:<span></span></p></td>
+                <td class="attributes"><p id="pAgi">AGI:<span></span></p></td>
+              </tr>
+              <tr>
+                <td class="equipButton" id="equip"><span>Equip</span></td>
+                <td class="equipButton" id="unequip"><span>Unequip</span></td>
+              </tr>
+            </table>
+          </div>
         </div>
         <div class="col" id="enemy">
-          <h2></h2>
+          <h2 class="text-right"></h2>
           <div class="progress">
             <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
           </div>
+          <img id="enemy-img" class="float-right img-fluid" src=""></img>
         </div>
         <div class="col-xs-3" id="enemyStats">
           <table id="stats">
             <tr>
               <td class="attributes"><p id="eHp">HP:<span></span></p></td>
-              <td class="attributes"><p id="eAtk">ATK:<span></span></p></td>
-            </tr>
-            <tr>
-              <td class="attributes"><p id="eDef">DEF:<span></span></p></td>
-              <td class="attributes"><p id="eAgi">AGI:<span></span></p></td>
             </tr>
           </table>
         </div>
       </div>
+      <!-- Disabled for development
       <div id="loader-wrapper">
         <div id="loader"></div>
         <div class="loader-section section-left"></div>
         <div class="loader-section section-right"></div>
       </div>
     </div>
-
+-->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
