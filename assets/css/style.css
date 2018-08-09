@@ -6,29 +6,41 @@ html, body {
     min-height: 100%;
     overflow: hidden;
 }
+
 #player {
   background-color: whitesmoke;
   max-width: 100%;
-  max-height: 100%;
+  max-height: 30%;
+  bottom: 0;
+  right: 0;
+  position: fixed;
 }
 
 #enemy {
-  
+  background-color: whitesmoke;
   max-width: 100%;
-  max-height: 100%;
-}
-
-#player, #enemy {
-  margin-bottom: -9999px;
-  padding-bottom: 9999px;
+  max-height: 30%;
+  top: 0;
+  left: 0;
+  position: fixed;
 }
 
 #characterSelect {
-
   max-width: 100%;
   height: 100%;
   background-color: whitesmoke;
 }
+
+.equipButton {
+  margin-right: 10%;
+  border-radius: 4px;
+  background-color: #0F3C73;
+  border: none;
+  color: #FFFFFF;
+  text-align: center;
+  cursor: pointer;
+}
+
 .selectButton {
     padding: 10%;
     width: 75%;
@@ -69,14 +81,16 @@ html, body {
   }
 
   #playerStats {
-    width: 200px;
-    height: 200px;
+    max-width: 100%;
+    max-height: 100%;
+    bottom: 0;
     border: 0px;
     background-color: #5882A6;
   }
 
 .attributes > p > span {
   color: #48A543;
+  font-size: 1.5em;
 }
 #loader-wrapper {
     position: fixed;
@@ -207,4 +221,42 @@ html, body {
 
     -webkit-transition: all 0.3s 0.3s ease-out;
             transition: all 0.3s 0.3s ease-out;
+}
+
+/* start of desktop styles */
+@media screen and (max-width: 2600px) {
+  .img-fluid {
+    max-width: 9%;
+  }
+}
+
+@media screen and (max-width: 1600px) {
+ /* start of large tablet styles */
+ .img-fluid {
+   max-width: 15%;
+ }
+}
+
+
+@media screen and (max-width: 1200px) {
+ /* start of large tablet styles */
+ .img-fluid {
+   max-width: 20%;
+ }
+}
+
+@media screen and (max-width: 767px) {
+ /* start of medium tablet styles */
+ /* Adding a fixed/percentage min-width could ensure that the image doesn't get too small */
+ .img-fluid {
+   max-width: 30%;
+ }
+}
+
+@media screen and (max-width: 479px) {
+ /* start of phone styles */
+ /* It's possible to hide the image if the screen becomes too small */
+ .img-fluid {
+   max-width: 51%;
+ }
 }

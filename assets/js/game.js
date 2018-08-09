@@ -10,8 +10,9 @@ var boss = []
 var weapons = []
 var armor = []
 
-var player = []
+var player = {}
 var equipment = []
+var equipFlag = ""
 
 /* Characters will be defined by the follow criteria
    1. Name
@@ -19,7 +20,9 @@ var equipment = []
    3. Attack damage
    4. Defense
    5. Agility
-   6. Magic attack
+   6. Critical chance
+   7. Magic attack
+   8. Image location
  */
 
 let playerClass = [
@@ -28,13 +31,17 @@ let playerClass = [
  atk: 6,
  def: 5,
  agi: 3,
- matk: 0},
+ crit: 0,
+ matk: 0,
+ img: 'swordman.svg'},
 {name: 'Squire',
  hp: 18,
  atk: 5,
  def: 3,
  agi: 5,
- matk: 0}
+ crit: 1,
+ matk: 0,
+ img: 'swordman.svg'}
 ]
 
 /* Weapons will be defined by the following criteria:
@@ -134,9 +141,7 @@ let commonArmor = [
     agi: 10,
     matk: 0}
  ]
-
-var player = {}
-enemies = {monster: tutorialEnemies[0]}
+enemy = {monster: tutorialEnemies[0]}
 
 function main(){
   loadGame();
@@ -147,6 +152,13 @@ function main(){
     selectCharacter($("#select2 span").html());
   });
 
+  loadEnemyStats(enemy);
+  $("#equip").click(function() {
+    equipCharacter();
+  });
+  $("#unequip").click(function() {
+    unequipCharacter();
+  });
 }
 
 function loadGame(){
@@ -176,18 +188,45 @@ function selectCharacter(selection){
       this.weapon = commonWeapons[0];
       break;
     }
-    let player = {class: pClass, weapon: this.weapon}
+   player = {class: pClass, weapon: this.weapon};
+   equipFlag = "N";
     $("#characterSelect").hide();
     $("#battle").show();
-    $("#player h2").html(player.class.name);
-    loadStats(player);
+    loadPlayerStats(player);
 }
 
-function loadStats(player){
+function loadPlayerStats(player){
+    $("#player h2").html(player.class.name);
     $("#pHp span").html(player.class.hp);
     $("#pAtk span").html(player.class.atk);
     $("#pDef span").html(player.class.def);
     $("#pAgi span").html(player.class.agi);
+    $("#player-img").attr("src", "assets/images/" + player.class.img);
 }
 
+function loadEnemyStats(enemy){
+  $("#enemy h2").html(enemy.monster.name);
+  $("#eHp span").html(enemy.monster.hp);
+  $("#enemy-img").attr("src", "assets/images/" + enemy.monster.img);
+}
+
+function equipCharacter(){
+  if (equipFlag === "N") {
+    player.class.atk += player.weapon.atk;
+    player.class.agi += player.weapon.agi;
+    player.class.crit += player.weapon.crit;
+    equipFlag = "Y"
+    loadPlayerStats(player);
+  }
+}
+
+function unequipCharacter(){
+  if (equipFlag === "Y") {
+    player.class.atk -= player.weapon.atk;
+    player.class.agi -= player.weapon.agi;
+    player.class.crit -= player.weapon.crit;
+    equipFlag = "N"
+    loadPlayerStats(player);
+  }
+}
 $(document).ready(main);
