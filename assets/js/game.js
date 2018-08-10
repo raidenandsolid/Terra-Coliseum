@@ -175,7 +175,7 @@ function loadGame(){
       $('body').addClass('loaded');
       $('h1').css('color','#222222');
   }, 3000);
-  $('#battle').hide();
+  $('.battle').hide();
   $('#select1 span').html(playerClass[0].name);
   $('#select2 span').html(playerClass[1].name);
 
@@ -200,7 +200,7 @@ function selectCharacter(selection){
    player = {class: pClass, weapon: this.weapon};
    equipFlag = "N";
     $("#characterSelect").hide();
-    $("#battle").show();
+    $(".battle").show();
     loadPlayerStats(player);
 }
 
@@ -255,36 +255,65 @@ function calcPlayerDamage(){
   };
 }
 
-function enemyAttack(playerHp){
+function enemyAttack(playerHp, maxPlayerHp, enemyAgi){
   this.player.hp = playerHp;
+  this.player.maxHp = maxPlayerHp;
+  this.enemy.agi = enemyAgi
+    if (this.player.hp === 0){
+      endGame('enemy');
+    }
   if (this.player.hp > 0){
     calcEnemyDamage();
     this.player.hp -= enemyDamage;
-    return this.player.hp;
+    $("#playerHpBar").attr("style", "width:" + Math.floor(((this.player.hp / this.player.maxHp) * 100)) + "%");
+    $("#battleText").prepend("<p style='color:red'>Enemy hits YOU for " + enemyDamage + " points of damage.</p>");
+    return setTimeout(enemyAttack, this.enemy.agi, this.player.hp, this.player.maxHp, this.enemy.agi);
   }
 }
 
-function playerAttack(enemyHp){
+function playerAttack(enemyHp, maxEnemyHp, playerAgi){
   this.enemy.hp = enemyHp;
+  this.enemy.maxHp = maxEnemyHp;
+  this.player.agi = playerAgi;
+    if (this.enemy.hp === 0){
+      endGame('player');
+    }
   if (this.enemy.hp > 0){
     calcPlayerDamage();
     this.enemy.hp -= playerDamage;
-    return this.enemy.hp;
+    $("#enemyHpBar").attr("style", "width:" + Math.floor(((this.enemy.hp / this.enemy.maxHp) * 100)) + "%");
+    $("#battleText").prepend("<p style='color:green'>YOU hit enemy for " + playerDamage + " points of damage.</p>");
+    return setTimeout(playerAttack, this.player.agi, this.enemy.hp, this.enemy.maxHp, this.player.agi);
   }
 }
+
 function beginFight(){
   var maxPlayerHp = player.class.hp;
   var playerHp = maxPlayerHp;
-  var playerAgi = Math.floor(20000 / player.class.agi);
+  var playerAgi = Math.floor(5000 / player.class.agi);
   var enemyHp = enemy.monster.hp;
   var maxEnemyHp = enemyHp;
-  var enemyAgi = Math.floor(15000 / enemy.monster.agi);
+  var enemyAgi = Math.floor(2500 / enemy.monster.agi);
 
-  while (playerHp > 0 && enemyHp > 0){
-    playerHp = enemyAttack(playerHp);
-    enemyHp = playerAttack(enemyHp);
-    $("#playerHpBar").attr("style", "width:" + Math.floor(((playerHp / maxPlayerHp) * 100)) + "%");
-    $("#enemyHpBar").attr("style", "width:" + Math.floor(((enemyHp / maxEnemyHp) * 100)) + "%");
-   }
+  //while (playerHp > 0 && enemyHp > 0){
+    //playerHp = enemyAttack(playerHp);
+    //enemyHp = playerAttack(enemyHp);
+    setTimeout(enemyAttack, enemyAgi, playerHp, maxPlayerHp, enemyAgi);
+    setTimeout(playerAttack, playerAgi, enemyHp, maxEnemyHp, playerAgi);
+   //}
+}
+
+function endGame(winner){
+  this.winner = winner;
+  switch (this.winner) {
+    case 'player':
+      alert("You win!!");
+      break;
+    case 'enemy':
+      alert("You lose..");
+      break;
+    default:
+      break;
+    }
 }
 $(document).ready(main);
