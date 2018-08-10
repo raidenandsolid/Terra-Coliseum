@@ -28,7 +28,7 @@
           <img id="player-img" class="float-left img-fluid" src=""></img>
           <h2 class="text-left"></h2>
           <div class="progress">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+            <div class="progress-bar progress-bar-striped progress-bar-animated" id="playerHpBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
           </div>
           <!--Player stats will be displayed on the bottom of the screen !-->
           <div class="col-xs-3" id="playerStats">
@@ -45,13 +45,16 @@
                 <td class="equipButton" id="equip"><span>Equip</span></td>
                 <td class="equipButton" id="unequip"><span>Unequip</span></td>
               </tr>
+              <tr>
+                <td id="fightButton"><button><span>Fight!</span></button></td>
+              </tr>
             </table>
           </div>
         </div>
         <div class="col" id="enemy">
           <h2 class="text-right"></h2>
           <div class="progress">
-            <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" id="enemyHpBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
           </div>
           <img id="enemy-img" class="float-right img-fluid" src=""></img>
         </div>
