@@ -13,6 +13,9 @@ var armor = []
 var player = {}
 var equipment = []
 var equipFlag = ""
+var enemyDamage = 0
+var playerDamage = 0
+var critChance = 0
 
 /* Characters will be defined by the follow criteria
    1. Name
@@ -27,7 +30,7 @@ var equipFlag = ""
 
 let playerClass = [
 {name: 'Fighter',
- hp: 20,
+ hp: 100,
  atk: 6,
  def: 5,
  agi: 3,
@@ -35,7 +38,7 @@ let playerClass = [
  matk: 0,
  img: 'swordman.svg'},
 {name: 'Squire',
- hp: 18,
+ hp: 80,
  atk: 5,
  def: 3,
  agi: 5,
@@ -112,14 +115,14 @@ let commonArmor = [
 
  let tutorialEnemies = [
    {name: 'Sewer Rat',
-    hp: 10,
+    hp: 55,
     atk: 3,
     def: 2,
     agi: 2,
     matk: 0,
     img: 'rat.svg'},
    {name: 'Wild Wolf',
-    hp: 12,
+    hp: 75,
     atk: 4,
     def: 1,
     agi: 3,
@@ -144,6 +147,7 @@ let commonArmor = [
 enemy = {monster: tutorialEnemies[0]}
 
 function main(){
+  var playerSelected = "N";
   loadGame();
   $("#select1").click(function() {
     selectCharacter($("#select1 span").html());
@@ -155,9 +159,14 @@ function main(){
   loadEnemyStats(enemy);
   $("#equip").click(function() {
     equipCharacter();
+    calcPlayerDamage();
   });
   $("#unequip").click(function() {
     unequipCharacter();
+    calcPlayerDamage();
+  });
+  $("#fightButton").click(function() {
+    beginFight();
   });
 }
 
@@ -228,5 +237,54 @@ function unequipCharacter(){
     equipFlag = "N"
     loadPlayerStats(player);
   }
+}
+
+function calcEnemyDamage(){
+  enemyDamage = Math.round((Math.random() * enemy.monster.atk) * 4) - player.class.def;
+  if (enemyDamage < 0) {
+    enemyDamage = 0;
+  }
+}
+
+function calcPlayerDamage(){
+  critChance = Math.floor(Math.random() * 100);
+  if (critChance > (100 - player.class.crit)) {
+      playerDamage = (Math.round((Math.random() * player.class.atk) + (player.class.atk * 1.1)) - enemy.monster.def);
+  } else {
+    playerDamage = (Math.round((Math.random() * player.class.atk) + ((player.class.atk / 2) * .3)) - enemy.monster.def);
+  };
+}
+
+function enemyAttack(playerHp){
+  this.player.hp = playerHp;
+  if (this.player.hp > 0){
+    calcEnemyDamage();
+    this.player.hp -= enemyDamage;
+    return this.player.hp;
+  }
+}
+
+function playerAttack(enemyHp){
+  this.enemy.hp = enemyHp;
+  if (this.enemy.hp > 0){
+    calcPlayerDamage();
+    this.enemy.hp -= playerDamage;
+    return this.enemy.hp;
+  }
+}
+function beginFight(){
+  var maxPlayerHp = player.class.hp;
+  var playerHp = maxPlayerHp;
+  var playerAgi = Math.floor(20000 / player.class.agi);
+  var enemyHp = enemy.monster.hp;
+  var maxEnemyHp = enemyHp;
+  var enemyAgi = Math.floor(15000 / enemy.monster.agi);
+
+  while (playerHp > 0 && enemyHp > 0){
+    playerHp = enemyAttack(playerHp);
+    enemyHp = playerAttack(enemyHp);
+    $("#playerHpBar").attr("style", "width:" + Math.floor(((playerHp / maxPlayerHp) * 100)) + "%");
+    $("#enemyHpBar").attr("style", "width:" + Math.floor(((enemyHp / maxEnemyHp) * 100)) + "%");
+   }
 }
 $(document).ready(main);
