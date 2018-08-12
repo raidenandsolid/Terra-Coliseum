@@ -4,18 +4,21 @@ let enemy = loadEnemy();
 */
 
 
-var enemies = []
-var boss = []
+let enemies = []
+let boss = []
 
-var weapons = []
-var armor = []
+let weapons = []
+let armor = []
 
-var player = {}
-var equipment = []
-var equipFlag = ""
-var enemyDamage = 0
-var playerDamage = 0
-var critChance = 0
+let player = {}
+let equipment = []
+let equipFlag = ""
+let enemyDamage = 0
+let playerDamage = 0
+let critChance = 0
+let xIsCrit = false
+let enemyMiss = false
+let playerMiss = false
 
 /* Characters will be defined by the follow criteria
    1. Name
@@ -44,6 +47,14 @@ let playerClass = [
  agi: 5,
  crit: 1,
  matk: 0,
+ img: 'swordman.svg'},
+ {name: 'Ranger',
+ hp: 60,
+ atk: 2,
+ def: 5,
+ agi: 9,
+ crit: 50,
+ matk: 0,
  img: 'swordman.svg'}
 ]
 
@@ -67,6 +78,12 @@ let commonWeapons = [
   atk: 8,
   agi: 7,
   crit: 1
+},
+{name: 'Shortbow',
+ rarity: 'common',
+ atk: 4,
+ agi: 10,
+ crit: 10
 }]
 
 let uncommonWeapons = [
@@ -146,16 +163,23 @@ let commonArmor = [
  ]
 enemy = {monster: tutorialEnemies[0]}
 
+//Main function of game. Will determine character selection.
 function main(){
   var playerSelected = "N";
   loadGame();
+
+  //Target the button that is clicked to load the class
   $("#select1").click(function() {
     selectCharacter($("#select1 span").html());
   });
   $("#select2").click(function() {
     selectCharacter($("#select2 span").html());
   });
+  $("#select3").click(function() {
+    selectCharacter($("#select3 span").html());
+  });
 
+  //Load enemy stats
   loadEnemyStats(enemy);
   $("#equip").click(function() {
     equipCharacter();
@@ -175,10 +199,11 @@ function loadGame(){
       $('body').addClass('loaded');
       $('h1').css('color','#222222');
   }, 3000);
+  $('#characterSelect').show();
   $('.battle').hide();
-  $('#select1 span').html(playerClass[0].name);
-  $('#select2 span').html(playerClass[1].name);
-
+  for(var i = 0; i < playerClass.length; i++) {
+    $('#select' + (i + 1) +' span').html(playerClass[i].name);
+  };
 }
 
 function selectCharacter(selection){
@@ -192,6 +217,10 @@ function selectCharacter(selection){
     case 'Squire':
       this.weapon = commonWeapons[1];
       pClass = playerClass[1];
+      break;
+    case 'Ranger':
+      this.weapon = commonWeapons[2];
+      pClass = playerClass[2];
       break;
     default:
       this.weapon = commonWeapons[0];
@@ -242,6 +271,7 @@ function unequipCharacter(){
 function calcEnemyDamage(){
   enemyDamage = Math.round((Math.random() * enemy.monster.atk) * 4) - player.class.def;
   if (enemyDamage < 0) {
+    enemyMiss = true;
     enemyDamage = 0;
   }
 }
@@ -249,20 +279,26 @@ function calcEnemyDamage(){
 function calcPlayerDamage(){
   critChance = Math.floor(Math.random() * 100);
   if (critChance > (100 - player.class.crit)) {
-      playerDamage = (Math.round((Math.random() * player.class.atk) + (player.class.atk * 1.1)) - enemy.monster.def);
+      playerDamage = (Math.round((Math.random() * player.class.atk) + (player.class.atk * 1.5)) - enemy.monster.def);
+      xIsCrit = true;
   } else {
     playerDamage = (Math.round((Math.random() * player.class.atk) + ((player.class.atk / 2) * .3)) - enemy.monster.def);
+    xIsCrit = false;
   };
+
+  if (playerDamage < 0) {
+    playerMiss = true;
+    playerDamage = 0;
+  }
 }
 
 function enemyAttack(playerHp, maxPlayerHp, enemyAgi){
   this.player.hp = playerHp;
   this.player.maxHp = maxPlayerHp;
   this.enemy.agi = enemyAgi
-    if (this.player.hp === 0){
+    if (this.player.hp === 0 || this.player.hp < 0){
       endGame('enemy');
-    }
-  if (this.player.hp > 0){
+    } else {
     calcEnemyDamage();
     this.player.hp -= enemyDamage;
     $("#playerHpBar").attr("style", "width:" + Math.floor(((this.player.hp / this.player.maxHp) * 100)) + "%");
@@ -275,32 +311,27 @@ function playerAttack(enemyHp, maxEnemyHp, playerAgi){
   this.enemy.hp = enemyHp;
   this.enemy.maxHp = maxEnemyHp;
   this.player.agi = playerAgi;
-    if (this.enemy.hp === 0){
+    if (this.enemy.hp === 0 || this.enemy.hp < 0){
       endGame('player');
-    }
-  if (this.enemy.hp > 0){
+    } else {
     calcPlayerDamage();
     this.enemy.hp -= playerDamage;
     $("#enemyHpBar").attr("style", "width:" + Math.floor(((this.enemy.hp / this.enemy.maxHp) * 100)) + "%");
-    $("#battleText").prepend("<p style='color:green'>YOU hit enemy for " + playerDamage + " points of damage.</p>");
+    if (xIsCrit ? $("#battleText").prepend("<p style='color:green'>Critical Hit!! YOU hit enemy for " + playerDamage + " points of damage.</p>") : $("#battleText").prepend("<p style='color:green'>YOU hit enemy for " + playerDamage + " points of damage.</p>"));
+
     return setTimeout(playerAttack, this.player.agi, this.enemy.hp, this.enemy.maxHp, this.player.agi);
   }
 }
 
 function beginFight(){
-  var maxPlayerHp = player.class.hp;
-  var playerHp = maxPlayerHp;
-  var playerAgi = Math.floor(5000 / player.class.agi);
-  var enemyHp = enemy.monster.hp;
-  var maxEnemyHp = enemyHp;
-  var enemyAgi = Math.floor(2500 / enemy.monster.agi);
-
-  //while (playerHp > 0 && enemyHp > 0){
-    //playerHp = enemyAttack(playerHp);
-    //enemyHp = playerAttack(enemyHp);
-    setTimeout(enemyAttack, enemyAgi, playerHp, maxPlayerHp, enemyAgi);
-    setTimeout(playerAttack, playerAgi, enemyHp, maxEnemyHp, playerAgi);
-   //}
+  let maxPlayerHp = player.class.hp;
+  let playerHp = maxPlayerHp;
+  let playerAgi = Math.floor(5000 / player.class.agi);
+  let enemyHp = enemy.monster.hp;
+  let maxEnemyHp = enemyHp;
+  let enemyAgi = Math.floor(2500 / enemy.monster.agi);
+  setTimeout(enemyAttack, enemyAgi, playerHp, maxPlayerHp, enemyAgi);
+  setTimeout(playerAttack, playerAgi, enemyHp, maxEnemyHp, playerAgi);
 }
 
 function endGame(winner){
@@ -308,9 +339,11 @@ function endGame(winner){
   switch (this.winner) {
     case 'player':
       alert("You win!!");
+      main();
       break;
     case 'enemy':
       alert("You lose..");
+      main();
       break;
     default:
       break;

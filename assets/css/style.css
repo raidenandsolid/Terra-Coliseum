@@ -29,12 +29,11 @@ body{
 #characterSelect {
   background-color: whitesmoke;
   max-width: 100%;
-  height: 100%;
+  max-height: 100%;
 }
 
 #battleText {
   overflow-y: scroll;
-  background-color: black;
   max-width: 100%;
   max-height: 33%;
   top: 32%;
@@ -96,6 +95,7 @@ body{
     bottom: 0;
     border: 0px;
     background-color: #5882A6;
+    padding-bottom: 10px;
   }
 
 .attributes > p > span {
