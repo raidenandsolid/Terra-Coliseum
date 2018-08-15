@@ -39,6 +39,7 @@ let playerClass = [
  agi: 3,
  crit: 0,
  matk: 0,
+ level: 1,
  img: 'swordman.svg'},
 {name: 'Squire',
  hp: 80,
@@ -47,7 +48,8 @@ let playerClass = [
  agi: 5,
  crit: 1,
  matk: 0,
- img: 'swordman.svg'},
+ level: 1,
+ img: 'barbute.svg'},
  {name: 'Ranger',
  hp: 60,
  atk: 2,
@@ -55,7 +57,8 @@ let playerClass = [
  agi: 9,
  crit: 50,
  matk: 0,
- img: 'swordman.svg'}
+ level: 1,
+ img: 'bowman.svg'}
 ]
 
 /* Weapons will be defined by the following criteria:
@@ -161,7 +164,7 @@ let commonArmor = [
     agi: 10,
     matk: 0}
  ]
-enemy = {monster: tutorialEnemies[0]}
+enemy = {monster: tutorialEnemies[Math.floor(Math.random() * tutorialEnemies.length)]}
 
 //Main function of game. Will determine character selection.
 function main(){
