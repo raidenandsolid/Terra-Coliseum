@@ -144,11 +144,13 @@ let rareWeapons = [
 let commonArmor = [
   {name: 'Cotton Tunic',
    rarity: 'common',
+   hp: 100,
    def: 5,
    mdef: 5,
    mres: 5},
   {name: 'Worn Vest',
    rarity: 'common',
+   hp: 80,
    def: 3,
    mdef: 3,
    mres: 1
@@ -182,18 +184,21 @@ let commonArmor = [
  ]
 
  let easyEnemies = [
-   {name: 'Kobold',
-    hp: 18,
-    atk: 11,
-    def: 8,
-    agi: 6,
-    matk: 0},
+   {name: 'Ogre',
+    hp: 200,
+    atk: 10,
+    def: 14,
+    agi: 5,
+    matk: 0,
+    img: 'ogre.svg'},
    {name: 'Goblin',
-    hp: 16,
+    hp: 125,
     atk: 8,
-    def: 6,
-    agi: 10,
-    matk: 0}
+    def: 10,
+    agi: 6,
+    matk: 0,
+    img: 'goblin.svg'
+  }
  ]
 enemy = {monster: tutorialEnemies[Math.floor(Math.random() * tutorialEnemies.length)]}
 
@@ -226,6 +231,9 @@ function main(){
   $("#fightButton").click(function() {
     beginFight();
   });
+  $("#enemyLevelButton").click(function() {
+    increaseEnemyLevel();
+  });
 }
 
 function loadGame(){
@@ -246,24 +254,28 @@ function selectCharacter(selection){
   switch (this.select) {
     case 'Fighter':
       this.weapon = commonWeapons[0];
+      this.armor = commonArmor[0];
       pClass = playerClass[0];
       playerPos = 0;
       break;
     case 'Squire':
       this.weapon = commonWeapons[1];
+      this.armor = commonArmor[1];
       pClass = playerClass[1];
       playerPos = 1;
       break;
     case 'Ranger':
       this.weapon = commonWeapons[2];
+      this.armor = commonArmor[1];
       pClass = playerClass[2];
       playerPos = 2;
       break;
     default:
       this.weapon = commonWeapons[0];
+      this.armor = commonArmor[0];
       break;
     }
-   player = {class: pClass, weapon: this.weapon};
+   player = {class: pClass, weapon: this.weapon, armor: this.armor};
    equipFlag = false;
     $("#characterSelect").hide();
     $(".battle").show();
@@ -290,7 +302,9 @@ function equipCharacter(){
     player.class.atk += player.weapon.atk;
     player.class.agi += player.weapon.agi;
     player.class.crit += player.weapon.crit;
-    $("#battleText").prepend("<p style='color:blue'>You equipped your " + player.weapon.name + ".</p>");
+    player.class.hp += player.armor.hp;
+    player.class.def += player.armor.def;
+    $("#battleText").prepend("<p style='color:blue'>You equipped your " + player.weapon.name + " and " + player.armor.name + ".</p>");
     equipFlag = true;
     loadPlayerStats(player);
   }
@@ -301,7 +315,9 @@ function unequipCharacter(){
     player.class.atk -= player.weapon.atk;
     player.class.agi -= player.weapon.agi;
     player.class.crit -= player.weapon.crit;
-    $("#battleText").prepend("<p style='color:blue'>You un-equipped your " + player.weapon.name + ".</p>");
+    player.class.hp -= player.armor.hp;
+    player.class.def -= player.armor.def;
+    $("#battleText").prepend("<p style='color:blue'>You un-equipped your " + player.weapon.name + " and " + player.armor.name +  ".</p>");
     equipFlag = false;
     loadPlayerStats(player);
   }
@@ -367,12 +383,17 @@ function playerAttack(enemyHp, maxEnemyHp, playerAgi){
 function beginFight(){
   let maxPlayerHp = player.class.hp;
   let playerHp = maxPlayerHp;
-  let playerAgi = Math.floor(5000 / player.class.agi);
+  let playerAgi = Math.floor(4500 / player.class.agi);
   let enemyHp = enemy.monster.hp;
   let maxEnemyHp = enemyHp;
-  let enemyAgi = Math.floor(2500 / enemy.monster.agi);
+  let enemyAgi = Math.floor(3500 / enemy.monster.agi);
   setTimeout(enemyAttack, enemyAgi, playerHp, maxPlayerHp, enemyAgi);
   setTimeout(playerAttack, playerAgi, enemyHp, maxEnemyHp, playerAgi);
+}
+
+function increaseEnemyLevel(){
+  enemy = {monster: easyEnemies[Math.floor(Math.random() * tutorialEnemies.length)]};
+  loadEnemyStats(enemy);
 }
 
 function endGame(winner){
