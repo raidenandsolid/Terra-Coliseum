@@ -12,13 +12,17 @@ let armor = []
 
 let player = {}
 let equipment = []
-let equipFlag = ""
+let equipFlag = false
 let enemyDamage = 0
 let playerDamage = 0
 let critChance = 0
 let xIsCrit = false
 let enemyMiss = false
 let playerMiss = false
+var playerPos = 0
+var drop = 0
+var enemyTimeout
+var playerTimeout
 
 /* Characters will be defined by the follow criteria
    1. Name
@@ -40,7 +44,8 @@ let playerClass = [
  crit: 0,
  matk: 0,
  level: 1,
- img: 'swordman.svg'},
+ img: 'swordman.svg'
+},
 {name: 'Squire',
  hp: 80,
  atk: 5,
@@ -90,18 +95,44 @@ let commonWeapons = [
 }]
 
 let uncommonWeapons = [
-     {name: 'Refined Longsword',
-      rarity: 'uncommon',
-      atk: 17,
-      agi: 8,
-      crit: 3},
+   {name: 'Refined Axe',
+    rarity: 'uncommon',
+    atk: 17,
+    agi: 8,
+    crit: 3
+    },
      {name: 'Sharpened Shortsword',
       rarity: 'uncommon',
       atk: 14,
       agi: 11,
       crit: 3
-  }]
+    },
+    {name: 'Composite Bow',
+     rarity: 'uncommon',
+     atk: 5,
+     agi: 15,
+     crit: 20
+ }]
 
+let rareWeapons = [
+  {name: 'Warmonger',
+   rarity: 'rare',
+   atk: 50,
+   agi: 20,
+   crit: 10
+ },
+ {name: 'Oathbreaker',
+  rarity: 'rare',
+  atk: 30,
+  agi: 40,
+  crit: 20
+},
+{name: "Siren's Cry",
+ rarity: 'rare',
+ atk: 15,
+ agi: 50,
+ crit: 30
+}]
 /*Armor will be defined by the following criteria:
   1. Armor name
   2. Rarity
@@ -216,21 +247,24 @@ function selectCharacter(selection){
     case 'Fighter':
       this.weapon = commonWeapons[0];
       pClass = playerClass[0];
+      playerPos = 0;
       break;
     case 'Squire':
       this.weapon = commonWeapons[1];
       pClass = playerClass[1];
+      playerPos = 1;
       break;
     case 'Ranger':
       this.weapon = commonWeapons[2];
       pClass = playerClass[2];
+      playerPos = 2;
       break;
     default:
       this.weapon = commonWeapons[0];
       break;
     }
    player = {class: pClass, weapon: this.weapon};
-   equipFlag = "N";
+   equipFlag = false;
     $("#characterSelect").hide();
     $(".battle").show();
     loadPlayerStats(player);
@@ -252,21 +286,23 @@ function loadEnemyStats(enemy){
 }
 
 function equipCharacter(){
-  if (equipFlag === "N") {
+  if (equipFlag === false) {
     player.class.atk += player.weapon.atk;
     player.class.agi += player.weapon.agi;
     player.class.crit += player.weapon.crit;
-    equipFlag = "Y"
+    $("#battleText").prepend("<p style='color:blue'>You equipped your " + player.weapon.name + ".</p>");
+    equipFlag = true;
     loadPlayerStats(player);
   }
 }
 
 function unequipCharacter(){
-  if (equipFlag === "Y") {
+  if (equipFlag === true) {
     player.class.atk -= player.weapon.atk;
     player.class.agi -= player.weapon.agi;
     player.class.crit -= player.weapon.crit;
-    equipFlag = "N"
+    $("#battleText").prepend("<p style='color:blue'>You un-equipped your " + player.weapon.name + ".</p>");
+    equipFlag = false;
     loadPlayerStats(player);
   }
 }
@@ -306,7 +342,8 @@ function enemyAttack(playerHp, maxPlayerHp, enemyAgi){
     this.player.hp -= enemyDamage;
     $("#playerHpBar").attr("style", "width:" + Math.floor(((this.player.hp / this.player.maxHp) * 100)) + "%");
     $("#battleText").prepend("<p style='color:red'>Enemy hits YOU for " + enemyDamage + " points of damage.</p>");
-    return setTimeout(enemyAttack, this.enemy.agi, this.player.hp, this.player.maxHp, this.enemy.agi);
+    enemyTimeout = setTimeout(enemyAttack, this.enemy.agi, this.player.hp, this.player.maxHp, this.enemy.agi);
+    return enemyTimeout;
   }
 }
 
@@ -321,8 +358,9 @@ function playerAttack(enemyHp, maxEnemyHp, playerAgi){
     this.enemy.hp -= playerDamage;
     $("#enemyHpBar").attr("style", "width:" + Math.floor(((this.enemy.hp / this.enemy.maxHp) * 100)) + "%");
     if (xIsCrit ? $("#battleText").prepend("<p style='color:green'>Critical Hit!! YOU hit enemy for " + playerDamage + " points of damage.</p>") : $("#battleText").prepend("<p style='color:green'>YOU hit enemy for " + playerDamage + " points of damage.</p>"));
-
-    return setTimeout(playerAttack, this.player.agi, this.enemy.hp, this.enemy.maxHp, this.player.agi);
+    playerTimeout = setTimeout(playerAttack, this.player.agi, this.enemy.hp, this.enemy.maxHp, this.player.agi);
+    //return setTimeout(playerAttack, this.player.agi, this.enemy.hp, this.enemy.maxHp, this.player.agi);
+    return playerTimeout;
   }
 }
 
@@ -341,15 +379,46 @@ function endGame(winner){
   this.winner = winner;
   switch (this.winner) {
     case 'player':
+      drop = Math.floor(Math.random() * 100);
+      switch (true) {
+        case (drop > 90):
+          if (player.weapon.rarity === 'uncommon' || player.weapon.rarity === 'common') {
+            $("#battleText").prepend("<p style='color:purple'>" + enemy.monster.name + " dropped a RARE " + rareWeapons[playerPos].name + "!</p>");
+            unequipCharacter();
+            player.weapon = rareWeapons[playerPos];
+          }
+          break;
+          case (drop > 50):
+            $("#battleText").prepend("<p style='color:orange'>" + enemy.monster.name + " dropped a " + uncommonWeapons[playerPos].name + "!</p>");
+            if (player.weapon.rarity === 'rare') {
+              unequipCharacter();
+              $("#battleText").prepend("<p style='color:green'> You currently possess a better weapon.</p>");
+            } else if (player.weapon.rarity === 'uncommon') {
+              unequipCharacter();
+              $("#battleText").prepend("<p style='color:green'> You currently possess this weapon.</p>");
+            } else {
+              unequipCharacter();
+              player.weapon = uncommonWeapons[playerPos];
+            }
+            break;
+        }
       alert("You win!!");
-      main();
+      resetGame();
       break;
     case 'enemy':
       alert("You lose..");
-      main();
+      resetGame();
       break;
     default:
       break;
     }
+}
+
+function resetGame() {
+    clearTimeout(enemyTimeout);
+    clearTimeout(playerTimeout);
+    if(equipFlag ? unequipCharacter() : $("#battleText").prepend("<p style='color:pink'>Let's play!"));
+    $("#playerHpBar").attr("style", "width:100%");
+    $("#enemyHpBar").attr("style", "width:100%");
 }
 $(document).ready(main);
