@@ -2,6 +2,7 @@
 import {loadEnemy} from 'enemies';
 let enemy = loadEnemy();
 */
+//import $ from 'jquery';
 
 
 let enemies = []
@@ -228,6 +229,7 @@ function main(){
     unequipCharacter();
     calcPlayerDamage();
   });
+  //React.render(<beginFight />, document.getElementById('buttonRow'));
   $("#fightButton").click(function() {
     beginFight();
   });
@@ -443,3 +445,30 @@ function resetGame() {
     $("#enemyHpBar").attr("style", "width:100%");
 }
 $(document).ready(main);
+/*class beginFight extends React.component {
+  constructor() {
+    super()
+
+     this.maxPlayerHp = player.class.hp;
+     this.playerHp = maxPlayerHp;
+     this.playerAgi = Math.floor(4500 / player.class.agi);
+     this.enemyHp = enemy.monster.hp;
+     this.maxEnemyHp = enemyHp;
+     this.enemyAgi = Math.floor(3500 / enemy.monster.agi);
+  }
+
+  handleButtonClick() {
+    setTimeout(enemyAttack, this.enemyAgi, this.playerHp, this.maxPlayerHp, this.enemyAgi);
+    setTimeout(playerAttack, this.playerAgi, this.enemyHp, this.maxEnemyHp, this.playerAgi);
+  }
+
+  render() {
+    return
+      <div class="col equipButton" id="equip"><span>Equip</span></div>
+      <div class="col equipButton" id="unequip"><span>Unequip</span></div>
+      <div class="col equipButton" id="fightButton">Fight</div>
+      <div class="col equipButton" id="enemyLevelButton"><span>Harder enemy</span></div>;
+
+  }
+}*/
+//React.render(<beginFight />, document.getElementById('buttonRow'));
