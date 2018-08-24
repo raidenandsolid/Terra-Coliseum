@@ -259,22 +259,32 @@ function selectCharacter(selection){
       this.armor = commonArmor[0];
       pClass = playerClass[0];
       playerPos = 0;
+      weapons.push(commonWeapons[0]);
+      /* name: commonWeapons.name(0),
+         rarity: commonWeapons.rarity(0),
+         atk: commonWeapons.atk(0),
+         agi: commonWeapons.agi(0),
+         crit: commonWeapons.crit(0)
+      });*/
       break;
     case 'Squire':
       this.weapon = commonWeapons[1];
       this.armor = commonArmor[1];
       pClass = playerClass[1];
       playerPos = 1;
+      weapons.push(commonWeapons[1]);
       break;
     case 'Ranger':
       this.weapon = commonWeapons[2];
       this.armor = commonArmor[1];
       pClass = playerClass[2];
       playerPos = 2;
+      weapons.push(commonWeapons[2]);
       break;
     default:
       this.weapon = commonWeapons[0];
       this.armor = commonArmor[0];
+      weapons.push(commonWeapons[0]);
       break;
     }
    player = {class: pClass, weapon: this.weapon, armor: this.armor};
@@ -300,6 +310,23 @@ function loadEnemyStats(enemy){
 }
 
 function equipCharacter(){
+  //Build a list of items to select
+  var showList = document.getElementById("itemList");
+  //if (showList.style.display === "none") {
+  showList.style.display = "inline-block";
+  //} else {
+  //showList.style.display = "none";
+  //}
+  //Convert the following row/cell logic to loop into building each entry
+  //from the weapons array.
+  var wepTable = document.getElementById("items");
+  for (var i = 0; i < weapons.length; i++) {
+    var wepRow = wepTable.insertRow(i);
+    var cell1 = wepRow.insertCell(0);
+    //cell1.innerHTML = "None";
+    cell1.innerHTML = weapons[i].name;
+    //cell1.innerHTML = weapons.length;
+  };
   if (equipFlag === false) {
     player.class.atk += player.weapon.atk;
     player.class.agi += player.weapon.agi;
@@ -409,6 +436,7 @@ function endGame(winner){
             $("#battleText").prepend("<p style='color:purple'>" + enemy.monster.name + " dropped a RARE " + rareWeapons[playerPos].name + "!</p>");
             unequipCharacter();
             player.weapon = rareWeapons[playerPos];
+            weapons.push(rareWeapons[playerPos]);
           }
           break;
           case (drop > 50):
@@ -422,6 +450,7 @@ function endGame(winner){
             } else {
               unequipCharacter();
               player.weapon = uncommonWeapons[playerPos];
+              weapons.push(uncommonWeapons[playerPos]);
             }
             break;
         }
