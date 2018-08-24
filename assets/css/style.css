@@ -29,6 +29,12 @@ html, body{
   max-height: 100%;
 }
 
+#itemList {
+  position: absolute;
+  padding: 1% 1% 1% 1%;
+  overflow: auto;
+}
+
 #battleText {
   overflow-y: scroll;
   max-width: 100%;
@@ -45,6 +51,22 @@ html, body{
   color: #FFFFFF;
   text-align: center;
   cursor: pointer;
+}
+
+.inventoryWindow {
+  margin-left: 25%;
+  position: relative;
+  height: 30%;
+  width: 30%;
+  padding: 2px;
+  background-color: #808080;
+  border-style: double;
+  border-width: 5px;
+  border-color: #000000;
+  color: #FFFFFF;
+  text-align: left;
+  top: 50%;
+  display: none;
 }
 
 .selectButton {
