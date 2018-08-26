@@ -43,6 +43,13 @@ html, body{
   position: fixed;
 }
 
+.modalCloseX {
+  position: absolute;
+  top : 0;
+  right: 0;
+  padding-bottom: 5px;
+}
+
 .equipButton {
   margin-right: 5%;
   border-radius: 4px;

@@ -24,6 +24,8 @@ var playerPos = 0
 var drop = 0
 var enemyTimeout
 var playerTimeout
+var fightFlag = false;
+var enemyFlag = false;
 
 /* Characters will be defined by the follow criteria
    1. Name
@@ -219,6 +221,11 @@ function main(){
     selectCharacter($("#select3 span").html());
   });
 
+  // When the user clicks the x within the modal, close it
+  $("#equipClose").click(function() {
+    $('#itemList').css('display', 'none');
+  })
+
   //Load enemy stats
   loadEnemyStats(enemy);
   $("#equip").click(function() {
@@ -231,10 +238,14 @@ function main(){
   });
   //React.render(<beginFight />, document.getElementById('buttonRow'));
   $("#fightButton").click(function() {
-    beginFight();
+    if (fightFlag === false) {
+      beginFight();
+    }
   });
   $("#enemyLevelButton").click(function() {
-    increaseEnemyLevel();
+    if (enemyFlag === false) {
+      increaseEnemyLevel();
+    }
   });
 }
 
@@ -310,23 +321,21 @@ function loadEnemyStats(enemy){
 }
 
 function equipCharacter(){
-  //Build a list of items to select
-  var showList = document.getElementById("itemList");
-  //if (showList.style.display === "none") {
-  showList.style.display = "inline-block";
-  //} else {
-  //showList.style.display = "none";
-  //}
+  //Build a list of items to select. Begin by emptying the items.
+  $("#items").empty();
+
+  //Select the itemList using jQuery and make the display inline-block to show on screen.
+  $("#itemList").css("display", "inline-block");
+
   //Convert the following row/cell logic to loop into building each entry
   //from the weapons array.
   var wepTable = document.getElementById("items");
   for (var i = 0; i < weapons.length; i++) {
     var wepRow = wepTable.insertRow(i);
     var cell1 = wepRow.insertCell(0);
-    //cell1.innerHTML = "None";
     cell1.innerHTML = weapons[i].name;
-    //cell1.innerHTML = weapons.length;
   };
+
   if (equipFlag === false) {
     player.class.atk += player.weapon.atk;
     player.class.agi += player.weapon.agi;
@@ -336,6 +345,7 @@ function equipCharacter(){
     $("#battleText").prepend("<p style='color:blue'>You equipped your " + player.weapon.name + " and " + player.armor.name + ".</p>");
     equipFlag = true;
     loadPlayerStats(player);
+
   }
 }
 
@@ -416,6 +426,10 @@ function beginFight(){
   let enemyHp = enemy.monster.hp;
   let maxEnemyHp = enemyHp;
   let enemyAgi = Math.floor(3500 / enemy.monster.agi);
+
+  //Set fight and enemy flags to true to disable buttons during fight
+  fightFlag = true;
+  enemyFlag = true;
   setTimeout(enemyAttack, enemyAgi, playerHp, maxPlayerHp, enemyAgi);
   setTimeout(playerAttack, playerAgi, enemyHp, maxEnemyHp, playerAgi);
 }
@@ -469,11 +483,14 @@ function endGame(winner){
 function resetGame() {
     clearTimeout(enemyTimeout);
     clearTimeout(playerTimeout);
+    fightFlag = false;
+    enemyFlag = false;
     if(equipFlag ? unequipCharacter() : $("#battleText").prepend("<p style='color:pink'>Let's play!"));
     $("#playerHpBar").attr("style", "width:100%");
     $("#enemyHpBar").attr("style", "width:100%");
 }
 $(document).ready(main);
+
 /*class beginFight extends React.component {
   constructor() {
     super()
