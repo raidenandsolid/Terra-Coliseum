@@ -4,28 +4,56 @@ let enemy = loadEnemy();
 */
 //import $ from 'jquery';
 
-
-let enemies = []
-let boss = []
-
-let weapons = []
+//Arrays
 let armor = []
-
-let player = {}
+let boss = []
+let enemies = []
 let equipment = []
-let equipFlag = false
-let enemyDamage = 0
-let playerDamage = 0
+let weapons = []
+
+//Player object
+let player = {}
+
+//Global variables
 let critChance = 0
-let xIsCrit = false
+let drop = 0
+let enemyDamage = 0
+let enemyFlag = false
 let enemyMiss = false
+let enemyTimeout
+let equipFlag = false
+let experience = 0
+let fightFlag = false
+let playerDamage = 0
 let playerMiss = false
-var playerPos = 0
-var drop = 0
-var enemyTimeout
-var playerTimeout
-var fightFlag = false;
-var enemyFlag = false;
+let playerPos = 0
+let playerTimeout
+let xIsCrit = false
+
+//Variables for character.
+// Copyright 2011 William Malone (www.williammalone.com) [Character animation code]
+var canvas;
+var context;
+var images = {};
+var totalResources = 6;
+var numResourcesLoaded = 0;
+var fps = 30;
+var x = 245;
+var y = 185;
+var breathInc = 0.1;
+var breathDir = 1;
+var breathAmt = 0;
+var breathMax = 2;
+var breathInterval = setInterval(updateBreath, 1000 / fps);
+var maxEyeHeight = 14;
+var curEyeHeight = maxEyeHeight;
+var eyeOpenTime = 0;
+var timeBtwBlinks = 4000;
+var blinkUpdateTime = 200;
+var blinkTimer = setInterval(updateBlink, blinkUpdateTime);
+var fpsInterval = setInterval(updateFPS, 1000);
+var numFramesDrawn = 0;
+var curFPS = 0;
 
 /* Characters will be defined by the follow criteria
    1. Name
@@ -35,7 +63,8 @@ var enemyFlag = false;
    5. Agility
    6. Critical chance
    7. Magic attack
-   8. Image location
+   8. Level
+   9. Image location
  */
 
 let playerClass = [
@@ -166,7 +195,8 @@ let commonArmor = [
    4. Defense
    5. Agility
    6. Magic attack
-   7. Img location
+   7. Experience
+   8. Img location
  */
 
  let tutorialEnemies = [
@@ -176,6 +206,7 @@ let commonArmor = [
     def: 2,
     agi: 2,
     matk: 0,
+    exp: 3,
     img: 'rat.svg'},
    {name: 'Wild Wolf',
     hp: 75,
@@ -183,6 +214,7 @@ let commonArmor = [
     def: 1,
     agi: 3,
     matk: 0,
+    exp: 6,
     img: 'wolf.svg'}
  ]
 
@@ -193,6 +225,7 @@ let commonArmor = [
     def: 14,
     agi: 5,
     matk: 0,
+    exp: 15,
     img: 'ogre.svg'},
    {name: 'Goblin',
     hp: 125,
@@ -200,7 +233,20 @@ let commonArmor = [
     def: 10,
     agi: 6,
     matk: 0,
+    exp: 11,
     img: 'goblin.svg'
+  }
+ ]
+
+ let bosses = [
+   {name: 'Crimsonfall',
+    hp: 15000,
+    atk: 200,
+    def: 150,
+    agi: 10,
+    matk: 0,
+    exp: 1000,
+    img: 'ogre.svg'
   }
  ]
 enemy = {monster: tutorialEnemies[Math.floor(Math.random() * tutorialEnemies.length)]}
@@ -245,6 +291,11 @@ function main(){
   $("#enemyLevelButton").click(function() {
     if (enemyFlag === false) {
       increaseEnemyLevel();
+    }
+  });
+  $("#bossButton").click(function() {
+    if (enemyFlag === false) {
+      fightBoss();
     }
   });
 }
@@ -307,11 +358,13 @@ function selectCharacter(selection){
 
 function loadPlayerStats(player){
     $("#player h2").html(player.class.name);
+    $("#pLvl span").html(player.class.level);
     $("#pHp span").html(player.class.hp);
     $("#pAtk span").html(player.class.atk);
     $("#pDef span").html(player.class.def);
     $("#pAgi span").html(player.class.agi);
-    $("#player-img").attr("src", "assets/images/" + player.class.img);
+    //$("#player-img").attr("src", "assets/images/" + player.class.img);
+    prepareCanvas(document.getElementById("canvasDiv"), 490, 220);
 }
 
 function loadEnemyStats(enemy){
@@ -439,6 +492,11 @@ function increaseEnemyLevel(){
   loadEnemyStats(enemy);
 }
 
+function fightBoss(){
+  enemy = {monster: bosses[Math.floor(Math.random() * bosses.length)]};
+  loadEnemyStats(enemy);
+}
+
 function endGame(winner){
   this.winner = winner;
   switch (this.winner) {
@@ -470,6 +528,7 @@ function endGame(winner){
         }
       alert("You win!!");
       resetGame();
+      setTimeout(gainExperience(), 1000);
       break;
     case 'enemy':
       alert("You lose..");
@@ -486,8 +545,150 @@ function resetGame() {
     fightFlag = false;
     enemyFlag = false;
     if(equipFlag ? unequipCharacter() : $("#battleText").prepend("<p style='color:pink'>Let's play!"));
+    enemy = {monster: tutorialEnemies[Math.floor(Math.random() * tutorialEnemies.length)]}
+    loadEnemyStats(enemy);
     $("#playerHpBar").attr("style", "width:100%");
     $("#enemyHpBar").attr("style", "width:100%");
+}
+
+function gainExperience() {
+  $("#battleText").prepend("<p style='color:blue'>You gained " + enemy.monster.exp + " experience points.");
+  var expForLevel = player.class.level * 10;
+  experience += enemy.monster.exp;
+  if (experience > expForLevel) {
+    player.class.level += 1;
+    player.class.atk += Math.floor(player.weapon.atk / 2);
+    player.class.agi += Math.floor(player.weapon.agi / 2);
+    player.class.crit += player.weapon.crit;
+    player.class.hp += player.armor.hp * 3;
+    player.class.def += Math.floor(player.armor.def / 2);
+  }
+  loadPlayerStats(player);
+}
+
+function updateFPS() {
+
+	curFPS = numFramesDrawn;
+	numFramesDrawn = 0;
+}
+
+function prepareCanvas(canvasDiv, canvasWidth, canvasHeight)
+{
+	// Create the canvas (Neccessary for IE because it doesn't know what a canvas element is)
+	canvas = document.createElement('canvas');
+	canvas.setAttribute('width', canvasWidth);
+	canvas.setAttribute('height', canvasHeight);
+	canvas.setAttribute('id', 'canvas');
+	canvasDiv.appendChild(canvas);
+
+	if(typeof G_vmlCanvasManager != 'undefined') {
+		canvas = G_vmlCanvasManager.initElement(canvas);
+	}
+	context = canvas.getContext("2d"); // Grab the 2d canvas context
+	// Note: The above code is a workaround for IE 8and lower. Otherwise we could have used:
+	//     context = document.getElementById('canvas').getContext("2d");
+
+	loadImage("leftArm");
+	loadImage("legs");
+	loadImage("torso");
+	loadImage("rightArm");
+	loadImage("head");
+	loadImage("hair");
+}
+
+function loadImage(name) {
+
+  images[name] = new Image();
+  images[name].onload = function() {
+	  resourceLoaded();
+  }
+  images[name].src = "assets/images/" + name + ".png";
+}
+
+function resourceLoaded() {
+
+  numResourcesLoaded += 1;
+  if(numResourcesLoaded === totalResources) {
+
+	setInterval(redraw, 1000 / fps);
+  }
+}
+
+function redraw() {
+
+  canvas.width = canvas.width; // clears the canvas
+
+  drawEllipse(x + 40, y + 29, 160 - breathAmt, 6); // Shadow
+
+  context.drawImage(images["leftArm"], x + 40, y - 42 - breathAmt);
+  context.drawImage(images["legs"], x, y);
+  context.drawImage(images["torso"], x, y - 50);
+  context.drawImage(images["head"], x - 10, y - 125 - breathAmt);
+  context.drawImage(images["hair"], x - 37, y - 138 - breathAmt);
+  context.drawImage(images["rightArm"], x - 15, y - 42 - breathAmt);
+
+  drawEllipse(x + 47, y - 68 - breathAmt, 8, curEyeHeight); // Left Eye
+  drawEllipse(x + 58, y - 68 - breathAmt, 8, curEyeHeight); // Right Eye
+
+  /*context.font = "bold 12px sans-serif";
+  context.fillText("fps: " + curFPS + "/" + fps + " (" + numFramesDrawn + ")", 40, 200);
+  ++numFramesDrawn;*/
+}
+
+function drawEllipse(centerX, centerY, width, height) {
+
+  context.beginPath();
+
+  context.moveTo(centerX, centerY - height/2);
+
+  context.bezierCurveTo(
+	centerX + width/2, centerY - height/2,
+	centerX + width/2, centerY + height/2,
+	centerX, centerY + height/2);
+
+  context.bezierCurveTo(
+	centerX - width/2, centerY + height/2,
+	centerX - width/2, centerY - height/2,
+	centerX, centerY - height/2);
+
+  context.fillStyle = "black";
+  context.fill();
+  context.closePath();
+}
+
+function updateBreath() {
+
+  if (breathDir === 1) {  // breath in
+	breathAmt -= breathInc;
+	if (breathAmt < -breathMax) {
+	  breathDir = -1;
+	}
+  } else {  // breath out
+	breathAmt += breathInc;
+	if(breathAmt > breathMax) {
+	  breathDir = 1;
+	}
+  }
+}
+
+function updateBlink() {
+
+  eyeOpenTime += blinkUpdateTime;
+
+  if(eyeOpenTime >= timeBtwBlinks){
+	blink();
+  }
+}
+
+function blink() {
+
+  curEyeHeight -= 1;
+  if (curEyeHeight <= 0) {
+	eyeOpenTime = 0;
+	curEyeHeight = maxEyeHeight;
+  } else {
+	setTimeout(blink, 10);
+  }
 }
 $(document).ready(main);
 
