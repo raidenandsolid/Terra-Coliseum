@@ -4,26 +4,56 @@ let enemy = loadEnemy();
 */
 //import $ from 'jquery';
 
-
-let enemies = []
-let boss = []
-
-let weapons = []
+//Arrays
 let armor = []
-
-let player = {}
+let boss = []
+let enemies = []
 let equipment = []
-let equipFlag = false
-let enemyDamage = 0
-let playerDamage = 0
+let weapons = []
+
+//Player object
+let player = {}
+
+//Global variables
 let critChance = 0
-let xIsCrit = false
+let drop = 0
+let enemyDamage = 0
+let enemyFlag = false
 let enemyMiss = false
+let enemyTimeout
+let equipFlag = false
+let experience = 0
+let expForLevel = 0
+let fightFlag = false
+let playerDamage = 0
 let playerMiss = false
-var playerPos = 0
-var drop = 0
-var enemyTimeout
-var playerTimeout
+let playerPos = 0
+let playerTimeout
+let xIsCrit = false
+
+//Variables for character.
+// Copyright 2011 William Malone (www.williammalone.com) [Character animation code]
+var canvas;
+var context;
+var images = {};
+var totalResources = 6;
+var numResourcesLoaded = 0;
+var fps = 30;
+var x = 245;
+var y = 185;
+var breathInc = 0.1;
+var breathDir = 1;
+var breathAmt = 0;
+var breathMax = 2;
+var breathInterval = setInterval(updateBreath, 1000 / fps);
+var maxEyeHeight = 14;
+var curEyeHeight = maxEyeHeight;
+var eyeOpenTime = 0;
+var timeBtwBlinks = 4000;
+var blinkUpdateTime = 200;
+var blinkTimer = setInterval(updateBlink, blinkUpdateTime);
+var numFramesDrawn = 0;
+var curFPS = 0;
 
 /* Characters will be defined by the follow criteria
    1. Name
@@ -33,7 +63,8 @@ var playerTimeout
    5. Agility
    6. Critical chance
    7. Magic attack
-   8. Image location
+   8. Level
+   9. Image location
  */
 
 let playerClass = [
@@ -45,7 +76,6 @@ let playerClass = [
  crit: 0,
  matk: 0,
  level: 1,
- img: 'swordman.svg'
 },
 {name: 'Squire',
  hp: 80,
@@ -54,8 +84,8 @@ let playerClass = [
  agi: 5,
  crit: 1,
  matk: 0,
- level: 1,
- img: 'barbute.svg'},
+ level: 1
+ },
  {name: 'Ranger',
  hp: 60,
  atk: 2,
@@ -63,8 +93,17 @@ let playerClass = [
  agi: 9,
  crit: 50,
  matk: 0,
+ level: 1
+ },
+ {name: 'Monk',
+ hp: 85,
+ atk: 6,
+ def: 4,
+ agi: 6,
+ crit: 3,
+ matk: 0,
  level: 1,
- img: 'bowman.svg'}
+}
 ]
 
 /* Weapons will be defined by the following criteria:
@@ -75,27 +114,36 @@ let playerClass = [
   5. Critical chance
 */
 
-let commonWeapons = [
+let commonWeapons =
+[
   {name: 'Battered Axe',
    rarity: 'common',
    atk: 10,
    agi: 3,
    crit: 1
  },
- {name: 'Gladius',
+   {name: 'Gladius',
+    rarity: 'common',
+    atk: 8,
+    agi: 7,
+    crit: 1
+  },
+  {name: 'Shortbow',
+   rarity: 'common',
+   atk: 4,
+   agi: 10,
+   crit: 10
+ },
+ {name: 'Brass Knuckles',
   rarity: 'common',
-  atk: 8,
-  agi: 7,
-  crit: 1
-},
-{name: 'Shortbow',
- rarity: 'common',
- atk: 4,
- agi: 10,
- crit: 10
-}]
+  atk: 4,
+  agi: 10,
+  crit: 10
+ }
+]
 
-let uncommonWeapons = [
+let uncommonWeapons =
+[
    {name: 'Refined Axe',
     rarity: 'uncommon',
     atk: 17,
@@ -113,27 +161,42 @@ let uncommonWeapons = [
      atk: 5,
      agi: 15,
      crit: 20
- }]
+   },
+   {name: 'Ruby Infused Knuckles',
+    rarity: 'uncommon',
+    atk: 15,
+    agi: 13,
+    crit: 6
+  }
+]
 
-let rareWeapons = [
+let rareWeapons =
+[
   {name: 'Warmonger',
    rarity: 'rare',
    atk: 50,
    agi: 20,
    crit: 10
- },
- {name: 'Oathbreaker',
-  rarity: 'rare',
-  atk: 30,
-  agi: 40,
-  crit: 20
-},
-{name: "Siren's Cry",
- rarity: 'rare',
- atk: 15,
- agi: 50,
- crit: 30
-}]
+   },
+   {name: 'Oathbreaker',
+    rarity: 'rare',
+    atk: 30,
+    agi: 40,
+    crit: 20
+  },
+  {name: "Siren's Cry",
+   rarity: 'rare',
+   atk: 15,
+   agi: 50,
+   crit: 30
+  },
+  {name: "Ancient Ebony Fist",
+   rarity: 'rare',
+   atk: 45,
+   agi: 30,
+   crit: 25
+  }
+]
 /*Armor will be defined by the following criteria:
   1. Armor name
   2. Rarity
@@ -164,7 +227,8 @@ let commonArmor = [
    4. Defense
    5. Agility
    6. Magic attack
-   7. Img location
+   7. Experience
+   8. Img location
  */
 
  let tutorialEnemies = [
@@ -174,6 +238,7 @@ let commonArmor = [
     def: 2,
     agi: 2,
     matk: 0,
+    exp: 3,
     img: 'rat.svg'},
    {name: 'Wild Wolf',
     hp: 75,
@@ -181,7 +246,24 @@ let commonArmor = [
     def: 1,
     agi: 3,
     matk: 0,
-    img: 'wolf.svg'}
+    exp: 6,
+    img: 'wolf.svg'},
+    {name: 'Phantombug',
+     hp: 45,
+     atk: 3,
+     def: 3,
+     agi: 3,
+     matk: 0,
+     exp: 4,
+     img: 'rat.svg'},
+    {name: 'Frightcat',
+     hp: 70,
+     atk: 5,
+     def: 2,
+     agi: 3,
+     matk: 0,
+     exp: 8,
+     img: 'wolf.svg'}
  ]
 
  let easyEnemies = [
@@ -191,6 +273,7 @@ let commonArmor = [
     def: 14,
     agi: 5,
     matk: 0,
+    exp: 15,
     img: 'ogre.svg'},
    {name: 'Goblin',
     hp: 125,
@@ -198,7 +281,20 @@ let commonArmor = [
     def: 10,
     agi: 6,
     matk: 0,
+    exp: 11,
     img: 'goblin.svg'
+  }
+ ]
+
+ let bosses = [
+   {name: 'Crimsonfall',
+    hp: 15000,
+    atk: 200,
+    def: 150,
+    agi: 10,
+    matk: 0,
+    exp: 1000,
+    img: 'ogre.svg'
   }
  ]
 enemy = {monster: tutorialEnemies[Math.floor(Math.random() * tutorialEnemies.length)]}
@@ -218,6 +314,14 @@ function main(){
   $("#select3").click(function() {
     selectCharacter($("#select3 span").html());
   });
+  $("#select4").click(function() {
+    selectCharacter($("#select4 span").html());
+  });
+
+  // When the user clicks the x within the modal, close it
+  $("#equipClose").click(function() {
+    $('#itemList').css('display', 'none');
+  })
 
   //Load enemy stats
   loadEnemyStats(enemy);
@@ -229,13 +333,22 @@ function main(){
     unequipCharacter();
     calcPlayerDamage();
   });
-  //React.render(<beginFight />, document.getElementById('buttonRow'));
   $("#fightButton").click(function() {
-    beginFight();
+    if (fightFlag === false) {
+      beginFight();
+    }
   });
   $("#enemyLevelButton").click(function() {
-    increaseEnemyLevel();
+    if (enemyFlag === false) {
+      increaseEnemyLevel();
+    }
   });
+  $("#bossButton").click(function() {
+    if (enemyFlag === false) {
+      fightBoss();
+    }
+  });
+  prepareCanvas(document.getElementById("canvasDiv"), 490, 220);
 }
 
 function loadGame(){
@@ -281,6 +394,13 @@ function selectCharacter(selection){
       playerPos = 2;
       weapons.push(commonWeapons[2]);
       break;
+      case 'Monk':
+        this.weapon = commonWeapons[3];
+        this.armor = commonArmor[0];
+        pClass = playerClass[3];
+        playerPos = 3;
+        weapons.push(commonWeapons[3]);
+        break;
     default:
       this.weapon = commonWeapons[0];
       this.armor = commonArmor[0];
@@ -296,11 +416,11 @@ function selectCharacter(selection){
 
 function loadPlayerStats(player){
     $("#player h2").html(player.class.name);
+    $("#pLvl span").html(player.class.level);
     $("#pHp span").html(player.class.hp);
     $("#pAtk span").html(player.class.atk);
     $("#pDef span").html(player.class.def);
     $("#pAgi span").html(player.class.agi);
-    $("#player-img").attr("src", "assets/images/" + player.class.img);
 }
 
 function loadEnemyStats(enemy){
@@ -310,23 +430,21 @@ function loadEnemyStats(enemy){
 }
 
 function equipCharacter(){
-  //Build a list of items to select
-  var showList = document.getElementById("itemList");
-  //if (showList.style.display === "none") {
-  showList.style.display = "inline-block";
-  //} else {
-  //showList.style.display = "none";
-  //}
+  //Build a list of items to select. Begin by emptying the items.
+  $("#items").empty();
+
+  //Select the itemList using jQuery and make the display inline-block to show on screen.
+  $("#itemList").css("display", "inline-block");
+
   //Convert the following row/cell logic to loop into building each entry
   //from the weapons array.
   var wepTable = document.getElementById("items");
   for (var i = 0; i < weapons.length; i++) {
     var wepRow = wepTable.insertRow(i);
     var cell1 = wepRow.insertCell(0);
-    //cell1.innerHTML = "None";
     cell1.innerHTML = weapons[i].name;
-    //cell1.innerHTML = weapons.length;
   };
+
   if (equipFlag === false) {
     player.class.atk += player.weapon.atk;
     player.class.agi += player.weapon.agi;
@@ -336,6 +454,7 @@ function equipCharacter(){
     $("#battleText").prepend("<p style='color:blue'>You equipped your " + player.weapon.name + " and " + player.armor.name + ".</p>");
     equipFlag = true;
     loadPlayerStats(player);
+
   }
 }
 
@@ -404,7 +523,6 @@ function playerAttack(enemyHp, maxEnemyHp, playerAgi){
     $("#enemyHpBar").attr("style", "width:" + Math.floor(((this.enemy.hp / this.enemy.maxHp) * 100)) + "%");
     if (xIsCrit ? $("#battleText").prepend("<p style='color:green'>Critical Hit!! YOU hit enemy for " + playerDamage + " points of damage.</p>") : $("#battleText").prepend("<p style='color:green'>YOU hit enemy for " + playerDamage + " points of damage.</p>"));
     playerTimeout = setTimeout(playerAttack, this.player.agi, this.enemy.hp, this.enemy.maxHp, this.player.agi);
-    //return setTimeout(playerAttack, this.player.agi, this.enemy.hp, this.enemy.maxHp, this.player.agi);
     return playerTimeout;
   }
 }
@@ -416,12 +534,21 @@ function beginFight(){
   let enemyHp = enemy.monster.hp;
   let maxEnemyHp = enemyHp;
   let enemyAgi = Math.floor(3500 / enemy.monster.agi);
+
+  //Set fight and enemy flags to true to disable buttons during fight
+  fightFlag = true;
+  enemyFlag = true;
   setTimeout(enemyAttack, enemyAgi, playerHp, maxPlayerHp, enemyAgi);
   setTimeout(playerAttack, playerAgi, enemyHp, maxEnemyHp, playerAgi);
 }
 
 function increaseEnemyLevel(){
   enemy = {monster: easyEnemies[Math.floor(Math.random() * tutorialEnemies.length)]};
+  loadEnemyStats(enemy);
+}
+
+function fightBoss(){
+  enemy = {monster: bosses[Math.floor(Math.random() * bosses.length)]};
   loadEnemyStats(enemy);
 }
 
@@ -456,6 +583,7 @@ function endGame(winner){
         }
       alert("You win!!");
       resetGame();
+      setTimeout(gainExperience(), 1000);
       break;
     case 'enemy':
       alert("You lose..");
@@ -469,11 +597,147 @@ function endGame(winner){
 function resetGame() {
     clearTimeout(enemyTimeout);
     clearTimeout(playerTimeout);
+    fightFlag = false;
+    enemyFlag = false;
     if(equipFlag ? unequipCharacter() : $("#battleText").prepend("<p style='color:pink'>Let's play!"));
+    enemy = {monster: tutorialEnemies[Math.floor(Math.random() * tutorialEnemies.length)]}
+    loadEnemyStats(enemy);
     $("#playerHpBar").attr("style", "width:100%");
     $("#enemyHpBar").attr("style", "width:100%");
 }
+
+function gainExperience() {
+  $("#battleText").prepend("<p style='color:blue'>You gained " + enemy.monster.exp + " experience points.");
+  expForLevel = player.class.level * 10;
+  experience += enemy.monster.exp;
+  $("#playerExpBar").attr("style", "width:" + Math.floor(((experience / expForLevel) * 100)) + "%")
+  if (experience > expForLevel) {
+    player.class.level += 1;
+    player.class.atk += Math.floor(player.weapon.atk / 2);
+    player.class.agi += Math.floor(player.weapon.agi / 2);
+    player.class.crit += player.weapon.crit;
+    player.class.hp += player.armor.hp * 3;
+    player.class.def += Math.floor(player.armor.def / 2);
+  }
+  loadPlayerStats(player);
+}
+
+function prepareCanvas(canvasDiv, canvasWidth, canvasHeight)
+{
+	// Create the canvas (Neccessary for IE because it doesn't know what a canvas element is)
+	canvas = document.createElement('canvas');
+	canvas.setAttribute('width', canvasWidth);
+	canvas.setAttribute('height', canvasHeight);
+	canvas.setAttribute('id', 'canvas');
+	canvasDiv.appendChild(canvas);
+
+	if(typeof G_vmlCanvasManager != 'undefined') {
+		canvas = G_vmlCanvasManager.initElement(canvas);
+	}
+	context = canvas.getContext("2d"); // Grab the 2d canvas context
+	// Note: The above code is a workaround for IE 8and lower. Otherwise we could have used:
+	//     context = document.getElementById('canvas').getContext("2d");
+
+	loadImage("leftArm");
+	loadImage("legs");
+	loadImage("torso");
+	loadImage("rightArm");
+	loadImage("head");
+	loadImage("hair");
+}
+
+function loadImage(name) {
+
+  images[name] = new Image();
+  images[name].onload = function() {
+	  resourceLoaded();
+  }
+  images[name].src = "assets/images/" + name + ".png";
+}
+
+function resourceLoaded() {
+
+  numResourcesLoaded += 1;
+  if(numResourcesLoaded === totalResources) {
+
+	setInterval(redraw, 1000 / fps);
+  }
+}
+
+function redraw() {
+
+  canvas.width = canvas.width; // clears the canvas
+
+  drawEllipse(x + 40, y + 29, 160 - breathAmt, 6); // Shadow
+
+  context.drawImage(images["leftArm"], x + 40, y - 42 - breathAmt);
+  context.drawImage(images["legs"], x, y);
+  context.drawImage(images["torso"], x, y - 50);
+  context.drawImage(images["head"], x - 10, y - 125 - breathAmt);
+  context.drawImage(images["hair"], x - 37, y - 138 - breathAmt);
+  context.drawImage(images["rightArm"], x - 15, y - 42 - breathAmt);
+
+  drawEllipse(x + 47, y - 68 - breathAmt, 8, curEyeHeight); // Left Eye
+  drawEllipse(x + 58, y - 68 - breathAmt, 8, curEyeHeight); // Right Eye
+}
+
+function drawEllipse(centerX, centerY, width, height) {
+
+  context.beginPath();
+
+  context.moveTo(centerX, centerY - height/2);
+
+  context.bezierCurveTo(
+	centerX + width/2, centerY - height/2,
+	centerX + width/2, centerY + height/2,
+	centerX, centerY + height/2);
+
+  context.bezierCurveTo(
+	centerX - width/2, centerY + height/2,
+	centerX - width/2, centerY - height/2,
+	centerX, centerY - height/2);
+
+  context.fillStyle = "black";
+  context.fill();
+  context.closePath();
+}
+
+function updateBreath() {
+
+  if (breathDir === 1) {  // breath in
+	breathAmt -= breathInc;
+	if (breathAmt < -breathMax) {
+	  breathDir = -1;
+	}
+  } else {  // breath out
+	breathAmt += breathInc;
+	if(breathAmt > breathMax) {
+	  breathDir = 1;
+	}
+  }
+}
+
+function updateBlink() {
+
+  eyeOpenTime += blinkUpdateTime;
+
+  if(eyeOpenTime >= timeBtwBlinks){
+	blink();
+  }
+}
+
+function blink() {
+
+  curEyeHeight -= 1;
+  if (curEyeHeight <= 0) {
+	eyeOpenTime = 0;
+	curEyeHeight = maxEyeHeight;
+  } else {
+	setTimeout(blink, 10);
+  }
+}
 $(document).ready(main);
+
 /*class beginFight extends React.component {
   constructor() {
     super()
